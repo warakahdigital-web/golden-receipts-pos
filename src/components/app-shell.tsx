@@ -1,4 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutGrid,
   ShoppingCart,
@@ -14,8 +15,11 @@ import {
   ChevronDown,
   HelpCircle,
   AlignRight,
+  LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth, ROLE_LABEL } from "@/hooks/use-auth";
 
 const mainNav = [
   { to: "/", label: "لوحة التحكم", icon: LayoutGrid },
@@ -27,11 +31,17 @@ const mainNav = [
   { to: "/reports", label: "التقارير المالية", icon: BarChart3 },
 ] as const;
 
+const cashierNav = [
+  { to: "/pos", label: "نقطة البيع", icon: ShoppingCart },
+  { to: "/products", label: "المنتجات والمخزون", icon: Package },
+] as const;
+
 const systemNav = [
   { to: "/settings/company", label: "إعدادات المنشأة", icon: Building2 },
   { to: "/settings/users", label: "المستخدمون والصلاحيات", icon: ShieldCheck },
   { to: "/settings/general", label: "الإعدادات العامة", icon: Settings },
 ] as const;
+
 
 function NavList({
   items,
