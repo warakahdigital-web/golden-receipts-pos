@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 
-export const Route = createFileRoute("/pos")({
+export const Route = createFileRoute("/_authenticated/pos")({
   head: () => ({
     meta: [
       { title: "نقطة البيع — سحاب ERP" },
@@ -45,14 +45,56 @@ type Product = {
 };
 
 const products: Product[] = [
-  { id: "p1", name: "سماعات لاسلكية", sku: "SKU-1001", price: 349, stock: 24, category: "إلكترونيات" },
-  { id: "p2", name: "شاحن سريع 65 واط", sku: "SKU-1002", price: 129, stock: 58, category: "إلكترونيات" },
-  { id: "p3", name: "لوحة مفاتيح ميكانيكية", sku: "SKU-1003", price: 459, stock: 12, category: "إلكترونيات" },
+  {
+    id: "p1",
+    name: "سماعات لاسلكية",
+    sku: "SKU-1001",
+    price: 349,
+    stock: 24,
+    category: "إلكترونيات",
+  },
+  {
+    id: "p2",
+    name: "شاحن سريع 65 واط",
+    sku: "SKU-1002",
+    price: 129,
+    stock: 58,
+    category: "إلكترونيات",
+  },
+  {
+    id: "p3",
+    name: "لوحة مفاتيح ميكانيكية",
+    sku: "SKU-1003",
+    price: 459,
+    stock: 12,
+    category: "إلكترونيات",
+  },
   { id: "p4", name: "ماوس لاسلكي", sku: "SKU-1004", price: 89, stock: 76, category: "إكسسوارات" },
-  { id: "p5", name: "حافظة جوال جلدية", sku: "SKU-1005", price: 65, stock: 140, category: "إكسسوارات" },
-  { id: "p6", name: "كيبل USB-C مضفر", sku: "SKU-1006", price: 39, stock: 210, category: "إكسسوارات" },
+  {
+    id: "p5",
+    name: "حافظة جوال جلدية",
+    sku: "SKU-1005",
+    price: 65,
+    stock: 140,
+    category: "إكسسوارات",
+  },
+  {
+    id: "p6",
+    name: "كيبل USB-C مضفر",
+    sku: "SKU-1006",
+    price: 39,
+    stock: 210,
+    category: "إكسسوارات",
+  },
   { id: "p7", name: "ساعة ذكية", sku: "SKU-1007", price: 799, stock: 9, category: "إلكترونيات" },
-  { id: "p8", name: "حامل لابتوب معدني", sku: "SKU-1008", price: 149, stock: 33, category: "إكسسوارات" },
+  {
+    id: "p8",
+    name: "حامل لابتوب معدني",
+    sku: "SKU-1008",
+    price: 149,
+    stock: 33,
+    category: "إكسسوارات",
+  },
 ];
 
 const tabs = ["الكل", "إلكترونيات", "إكسسوارات"] as const;
@@ -280,7 +322,8 @@ function PosPage() {
           <div className="mt-4 flex flex-row-reverse justify-end gap-6 border-b border-border">
             {tabs.map((t) => {
               const active = tab === t;
-              const count = t === "الكل" ? products.length : products.filter((p) => p.category === t).length;
+              const count =
+                t === "الكل" ? products.length : products.filter((p) => p.category === t).length;
               return (
                 <button
                   key={t}

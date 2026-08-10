@@ -1,4 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutGrid,
   ShoppingCart,
@@ -14,8 +15,11 @@ import {
   ChevronDown,
   HelpCircle,
   AlignRight,
+  LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth, ROLE_LABEL } from "@/hooks/use-auth";
 
 const mainNav = [
   { to: "/", label: "لوحة التحكم", icon: LayoutGrid },
@@ -25,6 +29,11 @@ const mainNav = [
   { to: "/expenses", label: "المصروفات", icon: Wallet },
   { to: "/customers", label: "العملاء والموردون", icon: Users },
   { to: "/reports", label: "التقارير المالية", icon: BarChart3 },
+] as const;
+
+const cashierNav = [
+  { to: "/pos", label: "نقطة البيع", icon: ShoppingCart },
+  { to: "/products", label: "المنتجات والمخزون", icon: Package },
 ] as const;
 
 const systemNav = [
@@ -65,14 +74,21 @@ function NavList({
   );
 }
 
-export function AppShell({
-  breadcrumb,
-  children,
-}: {
-  breadcrumb: string;
-  children: ReactNode;
-}) {
+export function AppShell({ breadcrumb, children }: { breadcrumb: string; children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user, role } = useAuth();
+  const isAdmin = role === "admin";
+  const displayName = user?.user_metadata?.["full_name"] ?? user?.email ?? "مستخدم";
+  const initial = String(displayName).trim().charAt(0) || "م";
+
+  const handleSignOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  };
 
   return (
     <div dir="rtl" className="min-h-screen bg-background">
@@ -85,9 +101,7 @@ export function AppShell({
             <p className="font-display text-xl font-extrabold text-navy-foreground">
               سحاب <span className="text-gold">ERP</span>
             </p>
-            <p className="text-[11px] text-navy-foreground/60">
-              حلول سحابية متكاملة لإدارة أعمالك
-            </p>
+            <p className="text-[11px] text-navy-foreground/60">حلول سحابية متكاملة لإدارة أعمالك</p>
           </div>
         </div>
 
@@ -96,9 +110,7 @@ export function AppShell({
             أ
           </span>
           <span className="flex-1">
-            <span className="block text-sm font-bold text-navy-foreground">
-              مؤسسة أفق الأعمال
-            </span>
+            <span className="block text-sm font-bold text-navy-foreground">مؤسسة أفق الأعمال</span>
             <span className="block text-[11px] text-navy-foreground/60">الفرع الرئيسي</span>
           </span>
           <ChevronDown className="size-4 text-navy-foreground/60" />
@@ -108,12 +120,16 @@ export function AppShell({
           <p className="mb-2 px-3 text-[11px] font-bold tracking-wide text-gold">
             القائمة الرئيسية
           </p>
-          <NavList items={mainNav} pathname={pathname} />
+          <NavList items={isAdmin ? mainNav : cashierNav} pathname={pathname} />
 
-          <p className="mt-6 mb-2 px-3 text-[11px] font-bold tracking-wide text-gold">
-            إدارة النظام
-          </p>
-          <NavList items={systemNav} pathname={pathname} />
+          {isAdmin ? (
+            <>
+              <p className="mt-6 mb-2 px-3 text-[11px] font-bold tracking-wide text-gold">
+                إدارة النظام
+              </p>
+              <NavList items={systemNav} pathname={pathname} />
+            </>
+          ) : null}
         </div>
 
         <div className="mt-4 space-y-3">
@@ -125,9 +141,7 @@ export function AppShell({
               <span className="block text-sm font-bold text-navy-foreground">
                 هل تحتاج إلى مساعدة؟
               </span>
-              <span className="block text-[11px] text-navy-foreground/60">
-                تواصل مع فريق الدعم
-              </span>
+              <span className="block text-[11px] text-navy-foreground/60">تواصل مع فريق الدعم</span>
             </span>
             <ChevronDown className="size-4 text-navy-foreground/60" />
           </div>
@@ -143,13 +157,22 @@ export function AppShell({
             <button className="flex size-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-accent">
               <Bell className="size-[18px]" />
             </button>
+            <button
+              onClick={handleSignOut}
+              aria-label="تسجيل الخروج"
+              className="flex size-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+            >
+              <LogOut className="size-[18px]" />
+            </button>
             <div className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-accent">
               <span className="flex size-10 items-center justify-center rounded-xl bg-navy text-sm font-bold text-navy-foreground">
-                م
+                {initial}
               </span>
               <span className="text-right">
-                <span className="block text-sm font-bold">محمد العتيبي</span>
-                <span className="block text-[11px] text-muted-foreground">مدير النظام</span>
+                <span className="block text-sm font-bold">{displayName}</span>
+                <span className="block text-[11px] text-muted-foreground">
+                  {role ? ROLE_LABEL[role] : "—"}
+                </span>
               </span>
               <ChevronDown className="size-4 text-muted-foreground" />
             </div>

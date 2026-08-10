@@ -1,6 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlignRight, Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { AlignRight, Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchRole, homeForRole } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -23,6 +25,61 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const role = await fetchRole(data.user.id);
+      navigate({ to: homeForRole(role), replace: true });
+    });
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setNotice(null);
+    setLoading(true);
+
+    if (mode === "signup") {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: window.location.origin },
+      });
+      setLoading(false);
+      if (signUpError) {
+        setError("لم يتم إنشاء الحساب. تأكد من البريد الإلكتروني وكلمة مرور من 6 أحرف على الأقل.");
+        return;
+      }
+      if (!data.session) {
+        setNotice("تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيد الحساب ثم سجّل الدخول.");
+        setMode("signin");
+        return;
+      }
+      const role = await fetchRole(data.session.user.id);
+      navigate({ to: homeForRole(role), replace: true });
+      return;
+    }
+
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError || !data.user) {
+      setLoading(false);
+      setError("بيانات الدخول غير صحيحة، تأكد من البريد الإلكتروني وكلمة المرور.");
+      return;
+    }
+    const role = await fetchRole(data.user.id);
+    setLoading(false);
+    navigate({ to: homeForRole(role), replace: true });
+  };
 
   return (
     <div dir="rtl" className="grid min-h-screen lg:grid-cols-[1fr_480px]">
@@ -36,9 +93,7 @@ function LoginPage() {
             <p className="font-display text-2xl font-extrabold text-navy-foreground">
               سحاب <span className="text-gold">ERP</span>
             </p>
-            <p className="text-xs text-navy-foreground/60">
-              حلول سحابية متكاملة لإدارة أعمالك
-            </p>
+            <p className="text-xs text-navy-foreground/60">حلول سحابية متكاملة لإدارة أعمالك</p>
           </div>
         </div>
 
@@ -47,8 +102,8 @@ function LoginPage() {
             إدارة منشأتك <span className="text-gold">من مكان واحد</span>
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-navy-foreground/70">
-            نقطة بيع سريعة، فواتير متوافقة مع ضريبة القيمة المضافة، ومتابعة دقيقة للمخزون
-            والتقارير المالية.
+            نقطة بيع سريعة، فواتير متوافقة مع ضريبة القيمة المضافة، ومتابعة دقيقة للمخزون والتقارير
+            المالية.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-navy-foreground/80">
             {["نقطة بيع فورية بواجهة عربية", "فواتير ضريبية جاهزة", "تقارير مالية لحظية"].map(
@@ -79,19 +134,19 @@ function LoginPage() {
             </p>
           </div>
 
-          <p className="mt-8 text-xs font-bold text-gold lg:mt-0">مرحباً بك مجدداً</p>
-          <h1 className="mt-2 font-display text-3xl font-extrabold">تسجيل الدخول</h1>
+          <p className="mt-8 text-xs font-bold text-gold lg:mt-0">
+            {mode === "signin" ? "مرحباً بك مجدداً" : "مستخدم جديد"}
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">
+            {mode === "signin" ? "تسجيل الدخول" : "إنشاء حساب"}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            أدخل بيانات حسابك للوصول إلى لوحة تحكم منشأتك.
+            {mode === "signin"
+              ? "أدخل بيانات حسابك للوصول إلى لوحة تحكم منشأتك."
+              : "أول حساب في النظام يحصل على صلاحية المدير، والحسابات التالية تكون كاشير."}
           </p>
 
-          <form
-            className="mt-8 space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              navigate({ to: "/" });
-            }}
-          >
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-bold">
                 البريد الإلكتروني
@@ -102,6 +157,8 @@ function LoginPage() {
                   id="email"
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
                 />
@@ -118,9 +175,12 @@ function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-10 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
@@ -145,20 +205,47 @@ function LoginPage() {
               </label>
             </div>
 
+            {error ? (
+              <p className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-bold text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            {notice ? (
+              <p className="rounded-xl bg-success-soft px-3 py-2 text-xs font-bold text-success">
+                {notice}
+              </p>
+            ) : null}
+
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy-soft"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy-soft disabled:opacity-70"
             >
-              الدخول إلى النظام
-              <ArrowLeft className="size-4" />
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  {mode === "signin" ? "الدخول إلى النظام" : "إنشاء الحساب"}
+                  <ArrowLeft className="size-4" />
+                </>
+              )}
             </button>
           </form>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
-            ليس لديك حساب؟{" "}
-            <Link to="/" className="font-bold text-gold">
-              تواصل مع فريق سحاب
-            </Link>
+            {mode === "signin" ? "ليس لديك حساب؟ " : "لديك حساب بالفعل؟ "}
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin");
+                setError(null);
+                setNotice(null);
+              }}
+              className="font-bold text-gold"
+            >
+              {mode === "signin" ? "إنشاء حساب جديد" : "تسجيل الدخول"}
+            </button>
           </p>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 
-export const Route = createFileRoute("/products")({
+export const Route = createFileRoute("/_authenticated/products")({
   head: () => ({
     meta: [
       { title: "المنتجات والمخزون — سحاب ERP" },

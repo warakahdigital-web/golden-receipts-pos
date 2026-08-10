@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "لوحة التحكم — سحاب ERP" },
@@ -66,16 +66,62 @@ const stats = [
 ];
 
 const quick = [
-  { title: "إنشاء فاتورة", desc: "فاتورة مبيعات جديدة", icon: FileText, tone: "bg-gold-soft text-gold-foreground", to: "/pos" },
-  { title: "إضافة منتج", desc: "إضافة منتج للمخزون", icon: Package, tone: "bg-info-soft text-info", to: "/products" },
-  { title: "إضافة عميل", desc: "تسجيل عميل جديد", icon: Users, tone: "bg-success-soft text-success", to: "/customers" },
+  {
+    title: "إنشاء فاتورة",
+    desc: "فاتورة مبيعات جديدة",
+    icon: FileText,
+    tone: "bg-gold-soft text-gold-foreground",
+    to: "/pos",
+  },
+  {
+    title: "إضافة منتج",
+    desc: "إضافة منتج للمخزون",
+    icon: Package,
+    tone: "bg-info-soft text-info",
+    to: "/products",
+  },
+  {
+    title: "إضافة عميل",
+    desc: "تسجيل عميل جديد",
+    icon: Users,
+    tone: "bg-success-soft text-success",
+    to: "/customers",
+  },
 ];
 
 const activities = [
-  { title: "فاتورة مبيعات جديدة", desc: "فاتورة رقم #INV-1048", meta: "+ 1,250.00 ر.س", time: "منذ 8 دقائق", dot: "bg-gold", metaClass: "text-success" },
-  { title: "إضافة منتج للمخزون", desc: "سماعات لاسلكية - 24 قطعة", meta: "المخزون", time: "منذ 24 دقيقة", dot: "bg-info", metaClass: "text-success" },
-  { title: "تسجيل مصروف", desc: "مستلزمات مكتبية", meta: "- 340.00 ر.س", time: "منذ ساعة", dot: "bg-destructive", metaClass: "text-destructive" },
-  { title: "عميل جديد", desc: "مؤسسة أفق الأعمال", meta: "عميل", time: "منذ ساعتين", dot: "bg-success", metaClass: "text-success" },
+  {
+    title: "فاتورة مبيعات جديدة",
+    desc: "فاتورة رقم #INV-1048",
+    meta: "+ 1,250.00 ر.س",
+    time: "منذ 8 دقائق",
+    dot: "bg-gold",
+    metaClass: "text-success",
+  },
+  {
+    title: "إضافة منتج للمخزون",
+    desc: "سماعات لاسلكية - 24 قطعة",
+    meta: "المخزون",
+    time: "منذ 24 دقيقة",
+    dot: "bg-info",
+    metaClass: "text-success",
+  },
+  {
+    title: "تسجيل مصروف",
+    desc: "مستلزمات مكتبية",
+    meta: "- 340.00 ر.س",
+    time: "منذ ساعة",
+    dot: "bg-destructive",
+    metaClass: "text-destructive",
+  },
+  {
+    title: "عميل جديد",
+    desc: "مؤسسة أفق الأعمال",
+    meta: "عميل",
+    time: "منذ ساعتين",
+    dot: "bg-success",
+    metaClass: "text-success",
+  },
 ];
 
 const chart = [4200, 6100, 5400, 7300, 6800, 9200, 10400];
@@ -86,7 +132,9 @@ function SalesChart() {
   const w = 700;
   const h = 190;
   const pts = chart.map((v, i) => [(i / (chart.length - 1)) * w, h - (v / max) * h] as const);
-  const line = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const line = pts
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(" ");
   const area = `${line} L${w},${h} L0,${h} Z`;
 
   return (
@@ -99,7 +147,15 @@ function SalesChart() {
           </linearGradient>
         </defs>
         {[0, 0.33, 0.66, 1].map((r) => (
-          <line key={r} x1="0" y1={h * r} x2={w} y2={h * r} stroke="var(--border)" strokeWidth="1" />
+          <line
+            key={r}
+            x1="0"
+            y1={h * r}
+            x2={w}
+            y2={h * r}
+            stroke="var(--border)"
+            strokeWidth="1"
+          />
         ))}
         <path d={area} fill="url(#goldFill)" />
         <path d={line} fill="none" stroke="var(--gold)" strokeWidth="3" strokeLinecap="round" />
@@ -143,7 +199,8 @@ function Dashboard() {
               <div className="text-left">
                 <p className="text-xs text-muted-foreground">{s.label}</p>
                 <p className="mt-1 font-display text-2xl font-extrabold">
-                  {s.value} <span className="text-sm font-bold text-muted-foreground">{s.unit}</span>
+                  {s.value}{" "}
+                  <span className="text-sm font-bold text-muted-foreground">{s.unit}</span>
                 </p>
               </div>
             </div>
@@ -163,9 +220,7 @@ function Dashboard() {
             </button>
             <div className="text-right">
               <h2 className="font-display text-lg font-extrabold">نظرة عامة على المبيعات</h2>
-              <p className="text-xs text-muted-foreground">
-                مقارنة أداء المبيعات خلال آخر 7 أيام
-              </p>
+              <p className="text-xs text-muted-foreground">مقارنة أداء المبيعات خلال آخر 7 أيام</p>
             </div>
           </div>
           <SalesChart />
