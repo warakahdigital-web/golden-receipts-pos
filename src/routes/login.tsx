@@ -119,13 +119,8 @@ function LoginPage() {
             أدخل بيانات حسابك للوصول إلى لوحة تحكم منشأتك.
           </p>
 
-          <form
-            className="mt-8 space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              navigate({ to: "/" });
-            }}
-          >
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-bold">
                 البريد الإلكتروني
