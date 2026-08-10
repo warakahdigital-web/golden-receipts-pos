@@ -4,7 +4,6 @@ import { AlignRight, Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Loader2 } 
 import { supabase } from "@/integrations/supabase/client";
 import { fetchRole, homeForRole } from "@/hooks/use-auth";
 
-
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
@@ -82,10 +81,8 @@ function LoginPage() {
     navigate({ to: homeForRole(role), replace: true });
   };
 
-
   return (
     <div dir="rtl" className="grid min-h-screen lg:grid-cols-[1fr_480px]">
-
       {/* Brand side */}
       <div className="relative hidden flex-col justify-between bg-navy-deep p-12 lg:flex">
         <div className="flex items-center gap-3">
@@ -96,9 +93,7 @@ function LoginPage() {
             <p className="font-display text-2xl font-extrabold text-navy-foreground">
               سحاب <span className="text-gold">ERP</span>
             </p>
-            <p className="text-xs text-navy-foreground/60">
-              حلول سحابية متكاملة لإدارة أعمالك
-            </p>
+            <p className="text-xs text-navy-foreground/60">حلول سحابية متكاملة لإدارة أعمالك</p>
           </div>
         </div>
 
@@ -107,8 +102,8 @@ function LoginPage() {
             إدارة منشأتك <span className="text-gold">من مكان واحد</span>
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-navy-foreground/70">
-            نقطة بيع سريعة، فواتير متوافقة مع ضريبة القيمة المضافة، ومتابعة دقيقة للمخزون
-            والتقارير المالية.
+            نقطة بيع سريعة، فواتير متوافقة مع ضريبة القيمة المضافة، ومتابعة دقيقة للمخزون والتقارير
+            المالية.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-navy-foreground/80">
             {["نقطة بيع فورية بواجهة عربية", "فواتير ضريبية جاهزة", "تقارير مالية لحظية"].map(
@@ -151,9 +146,7 @@ function LoginPage() {
               : "أول حساب في النظام يحصل على صلاحية المدير، والحسابات التالية تكون كاشير."}
           </p>
 
-
           <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-bold">
                 البريد الإلكتروني
@@ -169,7 +162,6 @@ function LoginPage() {
                   placeholder="name@company.com"
                   className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
                 />
-
               </div>
             </div>
 
@@ -239,7 +231,6 @@ function LoginPage() {
                 </>
               )}
             </button>
-
           </form>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
@@ -256,7 +247,6 @@ function LoginPage() {
               {mode === "signin" ? "إنشاء حساب جديد" : "تسجيل الدخول"}
             </button>
           </p>
-
         </div>
       </div>
     </div>
