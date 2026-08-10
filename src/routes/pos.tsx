@@ -126,9 +126,9 @@ function PosPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[400px_1fr]">
+      <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_400px]">
         {/* Cart */}
-        <section className="surface-card order-2 flex flex-col p-5 xl:order-1">
+        <section className="surface-card order-2 flex flex-col p-5">
           <div className="flex items-start justify-between">
             <span className="rounded-lg bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
               {lines.length} أصناف
@@ -259,7 +259,7 @@ function PosPage() {
         </section>
 
         {/* Products */}
-        <section className="surface-card order-1 p-5 xl:order-2">
+        <section className="surface-card order-1 p-5">
           <div className="flex flex-wrap items-center gap-3">
             <button className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-accent">
               <SlidersHorizontal className="size-4" />
