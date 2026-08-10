@@ -132,13 +132,18 @@ export function AppShell({
           <p className="mb-2 px-3 text-[11px] font-bold tracking-wide text-gold">
             القائمة الرئيسية
           </p>
-          <NavList items={mainNav} pathname={pathname} />
+          <NavList items={isAdmin ? mainNav : cashierNav} pathname={pathname} />
 
-          <p className="mt-6 mb-2 px-3 text-[11px] font-bold tracking-wide text-gold">
-            إدارة النظام
-          </p>
-          <NavList items={systemNav} pathname={pathname} />
+          {isAdmin ? (
+            <>
+              <p className="mt-6 mb-2 px-3 text-[11px] font-bold tracking-wide text-gold">
+                إدارة النظام
+              </p>
+              <NavList items={systemNav} pathname={pathname} />
+            </>
+          ) : null}
         </div>
+
 
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-3 rounded-xl bg-navy px-3 py-3">
