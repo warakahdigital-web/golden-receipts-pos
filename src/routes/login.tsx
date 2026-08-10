@@ -1,0 +1,167 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { AlignRight, Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck } from "lucide-react";
+
+export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "تسجيل الدخول — سحاب ERP" },
+      {
+        name: "description",
+        content: "سجّل الدخول إلى حساب منشأتك في سحاب ERP لإدارة المبيعات والمخزون والفواتير.",
+      },
+      { property: "og:title", content: "تسجيل الدخول — سحاب ERP" },
+      {
+        property: "og:description",
+        content: "بوابة الدخول إلى نظام سحاب ERP السحابي لإدارة الأعمال.",
+      },
+    ],
+  }),
+  component: LoginPage,
+});
+
+function LoginPage() {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div dir="rtl" className="grid min-h-screen lg:grid-cols-[1fr_480px]">
+      {/* Brand side */}
+      <div className="relative hidden flex-col justify-between bg-navy-deep p-12 lg:flex">
+        <div className="flex items-center gap-3">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-gold text-gold-foreground">
+            <AlignRight className="size-5" />
+          </div>
+          <div>
+            <p className="font-display text-2xl font-extrabold text-navy-foreground">
+              سحاب <span className="text-gold">ERP</span>
+            </p>
+            <p className="text-xs text-navy-foreground/60">
+              حلول سحابية متكاملة لإدارة أعمالك
+            </p>
+          </div>
+        </div>
+
+        <div className="max-w-md">
+          <h2 className="font-display text-4xl leading-snug font-extrabold text-navy-foreground">
+            إدارة منشأتك <span className="text-gold">من مكان واحد</span>
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-navy-foreground/70">
+            نقطة بيع سريعة، فواتير متوافقة مع ضريبة القيمة المضافة، ومتابعة دقيقة للمخزون
+            والتقارير المالية.
+          </p>
+          <ul className="mt-8 space-y-3 text-sm text-navy-foreground/80">
+            {["نقطة بيع فورية بواجهة عربية", "فواتير ضريبية جاهزة", "تقارير مالية لحظية"].map(
+              (item) => (
+                <li key={item} className="flex items-center gap-3">
+                  <span className="flex size-7 items-center justify-center rounded-lg bg-navy text-gold">
+                    <ShieldCheck className="size-4" />
+                  </span>
+                  {item}
+                </li>
+              ),
+            )}
+          </ul>
+        </div>
+
+        <p className="text-xs text-navy-foreground/40">© 2024 سحاب ERP. جميع الحقوق محفوظة.</p>
+      </div>
+
+      {/* Form side */}
+      <div className="flex flex-col justify-center bg-background px-6 py-12 sm:px-12">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="flex items-center gap-3 lg:hidden">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-gold text-gold-foreground">
+              <AlignRight className="size-5" />
+            </div>
+            <p className="font-display text-xl font-extrabold">
+              سحاب <span className="text-gold">ERP</span>
+            </p>
+          </div>
+
+          <p className="mt-8 text-xs font-bold text-gold lg:mt-0">مرحباً بك مجدداً</p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">تسجيل الدخول</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            أدخل بيانات حسابك للوصول إلى لوحة تحكم منشأتك.
+          </p>
+
+          <form
+            className="mt-8 space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate({ to: "/" });
+            }}
+          >
+            <div>
+              <label htmlFor="email" className="mb-2 block text-sm font-bold">
+                البريد الإلكتروني
+              </label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  placeholder="name@company.com"
+                  className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="mb-2 block text-sm font-bold">
+                كلمة المرور
+              </label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-10 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label="إظهار كلمة المرور"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <button type="button" className="text-xs font-bold text-gold">
+                نسيت كلمة المرور؟
+              </button>
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-border accent-[var(--gold)]"
+                />
+                تذكرني
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy-soft"
+            >
+              الدخول إلى النظام
+              <ArrowLeft className="size-4" />
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-xs text-muted-foreground">
+            ليس لديك حساب؟{" "}
+            <Link to="/" className="font-bold text-gold">
+              تواصل مع فريق سحاب
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
