@@ -139,11 +139,18 @@ function LoginPage() {
             </p>
           </div>
 
-          <p className="mt-8 text-xs font-bold text-gold lg:mt-0">مرحباً بك مجدداً</p>
-          <h1 className="mt-2 font-display text-3xl font-extrabold">تسجيل الدخول</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            أدخل بيانات حسابك للوصول إلى لوحة تحكم منشأتك.
+          <p className="mt-8 text-xs font-bold text-gold lg:mt-0">
+            {mode === "signin" ? "مرحباً بك مجدداً" : "مستخدم جديد"}
           </p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">
+            {mode === "signin" ? "تسجيل الدخول" : "إنشاء حساب"}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {mode === "signin"
+              ? "أدخل بيانات حسابك للوصول إلى لوحة تحكم منشأتك."
+              : "أول حساب في النظام يحصل على صلاحية المدير، والحسابات التالية تكون كاشير."}
+          </p>
+
 
           <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
 
