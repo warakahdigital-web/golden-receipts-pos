@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlignRight, Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlignRight, Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchRole, homeForRole } from "@/hooks/use-auth";
+
 
 export const Route = createFileRoute("/login")({
   head: () => ({
