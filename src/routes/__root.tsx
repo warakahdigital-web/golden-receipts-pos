@@ -80,8 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "سحاب ERP — نظام إدارة الأعمال السحابي" },
       {
         name: "description",
-        content:
-          "سحاب ERP: نقطة بيع، فواتير ضريبية، مخزون وتقارير مالية بواجهة عربية متكاملة.",
+        content: "سحاب ERP: نقطة بيع، فواتير ضريبية، مخزون وتقارير مالية بواجهة عربية متكاملة.",
       },
       { property: "og:title", content: "سحاب ERP — نظام إدارة الأعمال السحابي" },
       {
