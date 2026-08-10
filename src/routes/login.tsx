@@ -57,8 +57,9 @@ function LoginPage() {
     navigate({ to: homeForRole(role), replace: true });
   };
 
-
+  return (
     <div dir="rtl" className="grid min-h-screen lg:grid-cols-[1fr_480px]">
+
       {/* Brand side */}
       <div className="relative hidden flex-col justify-between bg-navy-deep p-12 lg:flex">
         <div className="flex items-center gap-3">
