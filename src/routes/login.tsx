@@ -131,9 +131,12 @@ function LoginPage() {
                   id="email"
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
                 />
+
               </div>
             </div>
 
