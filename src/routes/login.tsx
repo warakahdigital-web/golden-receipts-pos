@@ -26,8 +26,38 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  return (
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const role = await fetchRole(data.user.id);
+      navigate({ to: homeForRole(role), replace: true });
+    });
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError || !data.user) {
+      setLoading(false);
+      setError("بيانات الدخول غير صحيحة، تأكد من البريد الإلكتروني وكلمة المرور.");
+      return;
+    }
+    const role = await fetchRole(data.user.id);
+    setLoading(false);
+    navigate({ to: homeForRole(role), replace: true });
+  };
+
+
     <div dir="rtl" className="grid min-h-screen lg:grid-cols-[1fr_480px]">
       {/* Brand side */}
       <div className="relative hidden flex-col justify-between bg-navy-deep p-12 lg:flex">
