@@ -83,6 +83,20 @@ export function AppShell({
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user, role } = useAuth();
+  const isAdmin = role === "admin";
+  const displayName = user?.user_metadata?.["full_name"] ?? user?.email ?? "مستخدم";
+  const initial = String(displayName).trim().charAt(0) || "م";
+
+  const handleSignOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  };
+
 
   return (
     <div dir="rtl" className="min-h-screen bg-background">
