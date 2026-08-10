@@ -212,6 +212,12 @@ function LoginPage() {
               </p>
             ) : null}
 
+            {notice ? (
+              <p className="rounded-xl bg-success-soft px-3 py-2 text-xs font-bold text-success">
+                {notice}
+              </p>
+            ) : null}
+
             <button
               type="submit"
               disabled={loading}
@@ -221,7 +227,7 @@ function LoginPage() {
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
-                  الدخول إلى النظام
+                  {mode === "signin" ? "الدخول إلى النظام" : "إنشاء الحساب"}
                   <ArrowLeft className="size-4" />
                 </>
               )}
@@ -230,11 +236,20 @@ function LoginPage() {
           </form>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
-            ليس لديك حساب؟{" "}
-            <Link to="/" className="font-bold text-gold">
-              تواصل مع فريق سحاب
-            </Link>
+            {mode === "signin" ? "ليس لديك حساب؟ " : "لديك حساب بالفعل؟ "}
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin");
+                setError(null);
+                setNotice(null);
+              }}
+              className="font-bold text-gold"
+            >
+              {mode === "signin" ? "إنشاء حساب جديد" : "تسجيل الدخول"}
+            </button>
           </p>
+
         </div>
       </div>
     </div>
