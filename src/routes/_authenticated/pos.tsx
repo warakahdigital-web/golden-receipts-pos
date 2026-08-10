@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 
-export const Route = createFileRoute("/pos")({
+export const Route = createFileRoute("/_authenticated/pos")({
   head: () => ({
     meta: [
       { title: "نقطة البيع — سحاب ERP" },
