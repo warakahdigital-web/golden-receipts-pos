@@ -172,17 +172,27 @@ export function AppShell({
             <button className="flex size-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-accent">
               <Bell className="size-[18px]" />
             </button>
+            <button
+              onClick={handleSignOut}
+              aria-label="تسجيل الخروج"
+              className="flex size-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+            >
+              <LogOut className="size-[18px]" />
+            </button>
             <div className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-accent">
               <span className="flex size-10 items-center justify-center rounded-xl bg-navy text-sm font-bold text-navy-foreground">
-                م
+                {initial}
               </span>
               <span className="text-right">
-                <span className="block text-sm font-bold">محمد العتيبي</span>
-                <span className="block text-[11px] text-muted-foreground">مدير النظام</span>
+                <span className="block text-sm font-bold">{displayName}</span>
+                <span className="block text-[11px] text-muted-foreground">
+                  {role ? ROLE_LABEL[role] : "—"}
+                </span>
               </span>
               <ChevronDown className="size-4 text-muted-foreground" />
             </div>
           </div>
+
 
           <div className="flex items-center gap-2 text-sm">
             <span className="font-bold">{breadcrumb}</span>
