@@ -180,13 +180,27 @@ function LoginPage() {
               </label>
             </div>
 
+            {error ? (
+              <p className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-bold text-destructive">
+                {error}
+              </p>
+            ) : null}
+
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy-soft"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy-soft disabled:opacity-70"
             >
-              الدخول إلى النظام
-              <ArrowLeft className="size-4" />
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  الدخول إلى النظام
+                  <ArrowLeft className="size-4" />
+                </>
+              )}
             </button>
+
           </form>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
