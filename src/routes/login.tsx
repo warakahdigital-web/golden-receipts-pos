@@ -30,6 +30,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -42,7 +44,30 @@ function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     setLoading(true);
+
+    if (mode === "signup") {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: window.location.origin },
+      });
+      setLoading(false);
+      if (signUpError) {
+        setError("لم يتم إنشاء الحساب. تأكد من البريد الإلكتروني وكلمة مرور من 6 أحرف على الأقل.");
+        return;
+      }
+      if (!data.session) {
+        setNotice("تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيد الحساب ثم سجّل الدخول.");
+        setMode("signin");
+        return;
+      }
+      const role = await fetchRole(data.session.user.id);
+      navigate({ to: homeForRole(role), replace: true });
+      return;
+    }
+
     const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -56,6 +81,7 @@ function LoginPage() {
     setLoading(false);
     navigate({ to: homeForRole(role), replace: true });
   };
+
 
   return (
     <div dir="rtl" className="grid min-h-screen lg:grid-cols-[1fr_480px]">
