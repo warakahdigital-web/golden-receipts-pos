@@ -94,7 +94,7 @@ function PosPage() {
     setCart((c) => {
       const next = { ...c };
       if ((next[id] ?? 0) <= 1) delete next[id];
-      else next[id] = next[id] - 1;
+      else next[id] = (next[id] ?? 1) - 1;
       return next;
     });
   const remove = (id: string) =>
