@@ -150,9 +150,12 @@ function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-border bg-card py-3 pr-10 pl-10 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
