@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   SlidersHorizontal,
@@ -13,8 +14,11 @@ import {
   Trash2,
   ChevronDown,
   Package,
+  Loader2,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { useAuth } from "@/hooks/use-auth";
+import { checkout, listProducts, money, VAT_RATE, type Product } from "@/lib/erp-data";
 
 export const Route = createFileRoute("/_authenticated/pos")({
   head: () => ({
@@ -35,100 +39,47 @@ export const Route = createFileRoute("/_authenticated/pos")({
   component: PosPage,
 });
 
-type Product = {
-  id: string;
-  name: string;
-  sku: string;
-  price: number;
-  stock: number;
-  category: "إلكترونيات" | "إكسسوارات";
-};
-
-const products: Product[] = [
-  {
-    id: "p1",
-    name: "سماعات لاسلكية",
-    sku: "SKU-1001",
-    price: 349,
-    stock: 24,
-    category: "إلكترونيات",
-  },
-  {
-    id: "p2",
-    name: "شاحن سريع 65 واط",
-    sku: "SKU-1002",
-    price: 129,
-    stock: 58,
-    category: "إلكترونيات",
-  },
-  {
-    id: "p3",
-    name: "لوحة مفاتيح ميكانيكية",
-    sku: "SKU-1003",
-    price: 459,
-    stock: 12,
-    category: "إلكترونيات",
-  },
-  { id: "p4", name: "ماوس لاسلكي", sku: "SKU-1004", price: 89, stock: 76, category: "إكسسوارات" },
-  {
-    id: "p5",
-    name: "حافظة جوال جلدية",
-    sku: "SKU-1005",
-    price: 65,
-    stock: 140,
-    category: "إكسسوارات",
-  },
-  {
-    id: "p6",
-    name: "كيبل USB-C مضفر",
-    sku: "SKU-1006",
-    price: 39,
-    stock: 210,
-    category: "إكسسوارات",
-  },
-  { id: "p7", name: "ساعة ذكية", sku: "SKU-1007", price: 799, stock: 9, category: "إلكترونيات" },
-  {
-    id: "p8",
-    name: "حامل لابتوب معدني",
-    sku: "SKU-1008",
-    price: 149,
-    stock: 33,
-    category: "إكسسوارات",
-  },
-];
-
-const tabs = ["الكل", "إلكترونيات", "إكسسوارات"] as const;
 const payments = [
   { id: "cash", label: "نقدي", icon: Banknote },
   { id: "card", label: "شبكة", icon: CreditCard },
   { id: "credit", label: "آجل", icon: Clock },
 ] as const;
 
-const money = (n: number) =>
-  n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 function PosPage() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<(typeof tabs)[number]>("الكل");
+  const [tab, setTab] = useState("الكل");
   const [payment, setPayment] = useState<string>("cash");
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [status, setStatus] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: listProducts,
+  });
+
+  const categories = useMemo(
+    () => ["الكل", ...Array.from(new Set(products.map((p) => p.category)))],
+    [products],
+  );
 
   const filtered = useMemo(
     () =>
       products.filter(
-        (p) =>
+        (p: Product) =>
           (tab === "الكل" || p.category === tab) &&
           (p.name.includes(query) || p.sku.toLowerCase().includes(query.toLowerCase())),
       ),
-    [query, tab],
+    [products, query, tab],
   );
 
   const lines = Object.entries(cart)
-    .map(([id, qty]) => ({ product: products.find((p) => p.id === id)!, qty }))
-    .filter((l) => l.product);
+    .map(([id, qty]) => ({ product: products.find((p) => p.id === id), qty }))
+    .filter((l): l is { product: Product; qty: number } => Boolean(l.product));
 
-  const subtotal = lines.reduce((s, l) => s + l.product.price * l.qty, 0);
-  const vat = subtotal * 0.15;
+  const subtotal = lines.reduce((s, l) => s + Number(l.product.price) * l.qty, 0);
+  const vat = subtotal * VAT_RATE;
   const total = subtotal + vat;
 
   const add = (id: string) => setCart((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 }));
@@ -146,13 +97,29 @@ function PosPage() {
       return next;
     });
 
+  const sell = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("no user");
+      return checkout({ cashierId: user.id, lines, paymentMethod: payment });
+    },
+    onSuccess: (sale) => {
+      setCart({});
+      setStatus({ kind: "ok", text: `تم إتمام البيع وإصدار الفاتورة ${sale.invoice_number}` });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+    },
+    onError: () => setStatus({ kind: "error", text: "تعذر إتمام البيع، حاول مرة أخرى." }),
+  });
+
   return (
     <AppShell breadcrumb="نقطة البيع">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground">
-            <span className="rounded-md bg-gold-soft px-1.5 py-0.5 text-gold-foreground">2</span>
-            الفواتير المعلقة
+            <span className="rounded-md bg-gold-soft px-1.5 py-0.5 text-gold-foreground">
+              {lines.length}
+            </span>
+            أصناف في السلة
           </span>
           <span className="inline-flex items-center gap-2 rounded-xl bg-success-soft px-3 py-2 text-xs font-bold text-success">
             <span className="size-2 rounded-full bg-success" />
@@ -207,12 +174,14 @@ function PosPage() {
                       <div className="flex-1 text-right">
                         <p className="text-sm font-bold">{product.name}</p>
                         <p className="text-[11px] text-muted-foreground">
-                          {money(product.price)} ر.س
+                          {money(Number(product.price))} ر.س
                         </p>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-sm font-bold">{money(product.price * qty)} ر.س</p>
+                      <p className="text-sm font-bold">
+                        {money(Number(product.price) * qty)} ر.س
+                      </p>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => add(product.id)}
@@ -290,12 +259,31 @@ function PosPage() {
               })}
             </div>
 
+            {status ? (
+              <p
+                className={`mt-4 rounded-xl px-3 py-2 text-xs font-bold ${
+                  status.kind === "ok"
+                    ? "bg-success-soft text-success"
+                    : "bg-destructive/10 text-destructive"
+                }`}
+              >
+                {status.text}
+              </p>
+            ) : null}
+
             <button
-              disabled={lines.length === 0}
+              onClick={() => sell.mutate()}
+              disabled={lines.length === 0 || sell.isPending}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3.5 text-sm font-bold text-gold-foreground transition-opacity disabled:bg-muted disabled:text-muted-foreground"
             >
-              <CheckCircle2 className="size-4" />
-              إتمام البيع {money(total)} ر.س
+              {sell.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle2 className="size-4" />
+                  إتمام البيع {money(total)} ر.س
+                </>
+              )}
             </button>
           </div>
         </section>
@@ -320,7 +308,7 @@ function PosPage() {
           </div>
 
           <div className="mt-4 flex flex-row-reverse justify-end gap-6 border-b border-border">
-            {tabs.map((t) => {
+            {categories.map((t) => {
               const active = tab === t;
               const count =
                 t === "الكل" ? products.length : products.filter((p) => p.category === t).length;
@@ -354,7 +342,11 @@ function PosPage() {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16 text-muted-foreground">
+              <Loader2 className="size-6 animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Search className="size-6" strokeWidth={1.75} />
@@ -373,8 +365,14 @@ function PosPage() {
                   className="rounded-2xl border border-border p-4 text-right transition-all hover:border-gold hover:shadow-[var(--shadow-card)]"
                 >
                   <div className="flex items-start justify-between">
-                    <span className="rounded-lg bg-success-soft px-2 py-0.5 text-[11px] font-bold text-success">
-                      {p.stock} قطعة
+                    <span
+                      className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${
+                        p.stock > 0
+                          ? "bg-success-soft text-success"
+                          : "bg-destructive/10 text-destructive"
+                      }`}
+                    >
+                      {p.stock} {p.unit}
                     </span>
                     <span className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                       <Package className="size-5" strokeWidth={1.75} />
@@ -387,7 +385,7 @@ function PosPage() {
                       <Plus className="size-4" />
                     </span>
                     <p className="font-display text-lg font-extrabold">
-                      {money(p.price)}{" "}
+                      {money(Number(p.price))}{" "}
                       <span className="text-xs font-bold text-muted-foreground">ر.س</span>
                     </p>
                   </div>
