@@ -20,6 +20,7 @@ import {
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_LABEL } from "@/hooks/use-auth";
+import { usePendingSalesStatus } from "@/lib/sync";
 
 const mainNav = [
   { to: "/", label: "لوحة التحكم", icon: LayoutGrid },
@@ -79,6 +80,7 @@ export function AppShell({ breadcrumb, children }: { breadcrumb: string; childre
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, role } = useAuth();
+  const { online, pendingCount } = usePendingSalesStatus();
   const isAdmin = role === "admin";
   const displayName = user?.user_metadata?.["full_name"] ?? user?.email ?? "مستخدم";
   const initial = String(displayName).trim().charAt(0) || "م";
@@ -178,12 +180,24 @@ export function AppShell({ breadcrumb, children }: { breadcrumb: string; childre
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="font-bold">{breadcrumb}</span>
             <span className="text-muted-foreground">/</span>
             <Link to="/" className="text-muted-foreground hover:text-foreground">
               الرئيسية
             </Link>
+            <span
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
+                online ? "border-success bg-success/10 text-success" : "border-destructive bg-destructive/10 text-destructive"
+              }`}
+            >
+              {online ? "متصل" : "غير متصل"}
+            </span>
+            {pendingCount > 0 ? (
+              <span className="inline-flex items-center rounded-full border border-gold bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
+                {pendingCount} فاتورة معلقة
+              </span>
+            ) : null}
           </div>
         </header>
 

@@ -19,6 +19,7 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { checkout, listProducts, money, VAT_RATE, type Product } from "@/lib/erp-data";
+import { generateZatcaQr } from "@/lib/zatca";
 
 export const Route = createFileRoute("/_authenticated/pos")({
   head: () => ({
@@ -53,6 +54,7 @@ function PosPage() {
   const [payment, setPayment] = useState<string>("cash");
   const [cart, setCart] = useState<Record<string, number>>({});
   const [status, setStatus] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const [zatcaQr, setZatcaQr] = useState<string | null>(null);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
@@ -102,11 +104,28 @@ function PosPage() {
       if (!user) throw new Error("no user");
       return checkout({ cashierId: user.id, lines, paymentMethod: payment });
     },
-    onSuccess: (sale) => {
+    onSuccess: async (sale) => {
       setCart({});
       setStatus({ kind: "ok", text: `تم إتمام البيع وإصدار الفاتورة ${sale.invoice_number}` });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+
+      const total = lines.reduce((s, l) => s + Number(l.product.price) * l.qty, 0);
+      const vat = total * VAT_RATE;
+      const payload = {
+        sellerName: "سحاب ERP",
+        vatNumber: "123456789012345",
+        timestamp: new Date().toISOString(),
+        totalAmount: total.toFixed(2),
+        vatAmount: vat.toFixed(2),
+      };
+
+      try {
+        const qr = await generateZatcaQr(payload);
+        setZatcaQr(qr);
+      } catch (error) {
+        console.error("Failed to generate ZATCA QR", error);
+      }
     },
     onError: () => setStatus({ kind: "error", text: "تعذر إتمام البيع، حاول مرة أخرى." }),
   });
@@ -285,6 +304,26 @@ function PosPage() {
                 </>
               )}
             </button>
+
+            {zatcaQr ? (
+              <div className="mt-5 rounded-3xl border border-border bg-background/90 p-4 text-right shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[.2em] text-muted-foreground">
+                      رمز ZATCA الضريبي
+                    </p>
+                    <p className="mt-1 text-sm font-bold">نسخة الفاتورة الضريبية</p>
+                  </div>
+                  <div className="rounded-xl bg-gold/10 px-3 py-2 text-[11px] font-bold text-gold">
+                    جاهز للطباعة
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-3 rounded-3xl border border-border p-4">
+                  <img src={zatcaQr} alt="ZATCA QR" className="h-44 w-44 rounded-2xl bg-white p-2" />
+                  <p className="text-[11px] text-muted-foreground">مسح رمز الاستجابة السريعة لإنشاء الفاتورة الضريبية</p>
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
 
